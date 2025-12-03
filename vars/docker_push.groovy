@@ -1,4 +1,4 @@
-def call(String Project, String ImageTag, String dockerHubUserParam) {
+def call(String Project, String ImageTag, String dockerHubUser) {
 
     withCredentials([
         usernamePassword(
@@ -8,16 +8,12 @@ def call(String Project, String ImageTag, String dockerHubUserParam) {
         )
     ]) {
 
-        // Login to DockerHub using Jenkins credentials
-        sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+        // Login
+        sh "echo ${env.dockerHubPass} | docker login -u ${env.dockerHubUser} --password-stdin"
 
-        // Tag local image → remote DockerHub image
-        sh "docker tag ${Project}:${ImageTag} ${dockerHubUserParam}/${Project}:${ImageTag}"
+        // Push directly → no tagging needed
+        sh "docker push ${dockerHubUser}/${Project}:${ImageTag}"
 
-        // Push image
-        sh "docker push ${dockerHubUserParam}/${Project}:${ImageTag}"
-
-        echo "Image Push Successful: ${dockerHubUserParam}/${Project}:${ImageTag}"
+        echo "Image Push Successful: ${dockerHubUser}/${Project}:${ImageTag}"
     }
 }
-
